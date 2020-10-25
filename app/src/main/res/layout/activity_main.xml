@@ -58,37 +58,6 @@
 
     </EditText>
 
-    <RadioGroup
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:background="#F6DF0C"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal">
-
-        <RadioButton
-            android:id="@+id/rbtnadmin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Administrador"
-            android:textColor="#0E0D0D"
-            android:textStyle="bold">
-
-        </RadioButton>
-
-        <RadioButton
-            android:id="@+id/rbtnuser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Usuario"
-            android:textColor="#0E0D0D"
-            android:textStyle="bold">
-
-        </RadioButton>
-
-    </RadioGroup>
-
-
     <Button
         android:id="@+id/btnlogin"
         android:layout_width="match_parent"

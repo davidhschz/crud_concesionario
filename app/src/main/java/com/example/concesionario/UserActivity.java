@@ -1,8 +1,10 @@
 package com.example.concesionario;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,6 +18,8 @@ public class UserActivity extends AppCompatActivity {
 
     EditText plateNumber, brand, price, model;
     Button add, search, update, delete, list;
+    String previousPN;
+    boolean busqueda = false;
     //DataBaseSQLite osqlite = new DataBaseSQLite(this,"DBCONCESIONARIO",null,1);
     VehicleDB osqlite = new VehicleDB(this,"DBVEHICULO",null,1);
     @Override
@@ -31,12 +35,57 @@ public class UserActivity extends AppCompatActivity {
         update = findViewById(R.id.actbtnupdate);
         delete = findViewById(R.id.actbtndelete);
         list = findViewById(R.id.actbtnlist);
-        
+
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!plateNumber.getText().toString().isEmpty()){
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(UserActivity.this);
+                    alertDialogBuilder.setMessage("Está seguro de eliminar el vehículo con placa: " + plateNumber.getText().toString() + "?");
+                    alertDialogBuilder.setPositiveButton("Si",
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    SQLiteDatabase db = osqlite.getWritableDatabase();
+                                    db.execSQL("DELETE FROM vehicle WHERE plateNumber = '" + plateNumber.getText().toString() +"'");
+                                    db.close();
+                                    Toast.makeText(UserActivity.this, "Vehículo eliminado correctamente", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                    alertDialogBuilder.setNegativeButton("No",
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            });
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+                    alertDialog.show();
+                }
+                else{
+                    Toast.makeText(UserActivity.this, "Ingrese la placa del vehículo", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        update.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (busqueda) {
+                    updateVehicle(plateNumber.getText().toString().trim(), brand.getText().toString().trim(), price.getText().toString().trim(), model.getText().toString().trim());    
+                }
+                else {
+                    Toast.makeText(UserActivity.this, "Para actualizar primero debe buscar el vehículo", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!plateNumber.getText().toString().isEmpty()){
-                    searchPlateNumber(plateNumber.getText().toString().trim());
+                    busqueda = true;
+                    searchPlateNumber();
                 }
                 else{
                     Toast.makeText(UserActivity.this, "Ingrese el número de placa", Toast.LENGTH_SHORT).show();
@@ -85,17 +134,68 @@ public class UserActivity extends AppCompatActivity {
         });
     }
 
-    private void searchPlateNumber(String idVehicle) {
-        SQLiteDatabase db = osqlite.getWritableDatabase();
-        String query = "SELECT brand, model, price FROM vehicle WHERE plateNumber = '" + plateNumber.getText().toString()+"'";
-        Cursor cvehicledata = db.rawQuery(query, null);
-        if (cvehicledata.moveToFirst()){
-            brand.setText(cvehicledata.getString(0));
-            price.setText(cvehicledata.getString(1));
-            model.setText(cvehicledata.getString(2));
+    private void updateVehicle(String plateNumber, String brand, String price, String model) {
+        if (!plateNumber.isEmpty() && !brand.isEmpty() && !price.isEmpty() && !model.isEmpty()){
+            SQLiteDatabase db = osqlite.getWritableDatabase();
+            SQLiteDatabase db1 = osqlite.getReadableDatabase();
+            if (plateNumber.equals(previousPN)){
+                db.execSQL("UPDATE vehicle SET brand = '" + brand + "', price = '" + price + "', model = '" + model + "' WHERE plateNumber = '" + plateNumber + "'");
+                db.close();
+                Toast.makeText(this, "Datos de vehículo actualizados correctamente", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                String query = "Select plateNumber From vehicle Where plateNumber = '" + plateNumber + "'";
+                Cursor cdataVehicle = db1.rawQuery(query, null);
+                if (cdataVehicle.moveToFirst()){
+                    Toast.makeText(this, "Ya existe un registro con esta placa", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    db.execSQL("UPDATE vehicle SET plateNumber = '" + plateNumber + "', brand = '" + brand + "', price = '" + price + "', model = '" + model + "' WHERE plateNumber = '" + previousPN + "'");
+                    db.close();
+                    Toast.makeText(this, "Datos de vehículo actualizados correctamente", Toast.LENGTH_SHORT).show();
+                    busqueda = false;
+                }
+            }
+        }
+        else {
+            Toast.makeText(UserActivity.this, "Ingrese todos los campos", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String searchPlateNumber() {
+        if (!plateNumber.getText().toString().isEmpty()) {
+            SQLiteDatabase db = osqlite.getWritableDatabase();
+            String query = "SELECT brand, model, price FROM vehicle WHERE plateNumber = '" + plateNumber.getText().toString() + "'";
+            Cursor cvehicledata = db.rawQuery(query, null);
+            if (cvehicledata.moveToFirst()) {
+                previousPN = plateNumber.getText().toString().trim();
+                brand.setText(cvehicledata.getString(0));
+                price.setText(cvehicledata.getString(2));
+                model.setText(cvehicledata.getString(1));
+            } else {
+                Toast.makeText(this, "El vehículo con placa " + plateNumber.getText().toString().trim() + " No está registrado", Toast.LENGTH_SHORT).show();
+            }
         }
         else{
-            Toast.makeText(this, "El vehículo con placa " + idVehicle + " No está registrado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(UserActivity.this, "Ingrese todos los campos", Toast.LENGTH_SHORT).show();
+        }
+        return previousPN;
+    }
+
+    private void seleccionarVistaUsuario(boolean admin) {
+        if (admin){
+            add.setEnabled(true);
+            search.setEnabled(true);
+            update.setEnabled(true);
+            delete.setEnabled(true);
+            list.setEnabled(true);
+        }
+        else{
+            add.setEnabled(false);
+            search.setEnabled(true);
+            update.setEnabled(false);
+            delete.setEnabled(false);
+            list.setEnabled(false);
         }
     }
 }

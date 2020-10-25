@@ -27,15 +27,13 @@ public class MainActivity extends SignUp {
         emaillog = findViewById(R.id.etemail);
         passwordlog = findViewById(R.id.etpassword);
         signup = findViewById(R.id.tvsignup);
-        admin = findViewById(R.id.rbtnadmin);
-        user = findViewById(R.id.rbtnuser);
         login = findViewById(R.id.btnlogin);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (!emaillog.getText().toString().isEmpty() && !passwordlog.getText().toString().isEmpty() && (admin.isChecked() || user.isChecked())){
+                if (!emaillog.getText().toString().isEmpty() && !passwordlog.getText().toString().isEmpty()){
                     SQLiteDatabase db = osqlite.getReadableDatabase();
                     String query = "SELECT password FROM user WHERE email = '" + emaillog.getText().toString()+"'";
                     Cursor cuserinfo = db.rawQuery(query, null);

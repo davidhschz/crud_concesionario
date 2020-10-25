@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/agregar"
+        android:title="Agregar"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/iconoguardar"
+        >
+    </item>
+    <item
+        android:id="@+id/buscar"
+        android:title="Buscar"
+        >
+    </item>
+    <item
+        android:id="@+id/actualizar"
+        android:title="Actualizar">
+    </item>
+    <item
+        android:id="@+id/eliminar"
+        android:title="Eliminar">
+    </item>
+    <item
+        android:id="@+id/listar"
+        android:title="Listar">
+    </item>
+</menu>
